@@ -1,0 +1,10 @@
+{
+    "name": "LethalTweaks",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/RoosterBooster007/LethalTweaks/",
+    "description": "Allows you to tweak many aspects of the game. Most work client side! Full bright, custom sprint/climb, inf. stamina, weightless, anti-sink/turrets, water breathing, disable cooldowns, disable falling, unltd. power, one-handed, remote start, and more!",
+    "dependencies": [
+        "AinaVT-LethalConfig-1.4.2",
+        "Rune580-LethalCompanyInputUtils-0.7.4"
+    ]
+}
