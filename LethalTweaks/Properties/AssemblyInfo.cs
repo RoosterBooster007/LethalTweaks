@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("LethalTools")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("LethalTweaks")]
+[assembly: AssemblyDescription("A Lethal Company mod that is full of client (and server) side tweaks! 40+ features and counting!")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("LethalTools")]
-[assembly: AssemblyCopyright("Copyright ©  2024")]
+[assembly: AssemblyProduct("LethalTweaks")]
+[assembly: AssemblyCopyright("Copyright © 2024 RoosterBooster007")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
