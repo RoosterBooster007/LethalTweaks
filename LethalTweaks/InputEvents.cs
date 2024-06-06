@@ -1,8 +1,10 @@
 ﻿using GameNetcodeStuff;
 using LethalTweaks;
+using System.Text;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEngine.GraphicsBuffer;
 
 namespace LethalTools
 {
@@ -96,9 +98,9 @@ namespace LethalTools
         {
             Object.FindObjectOfType<StartMatchLever>().PlayLeverPullEffectsServerRpc(true);
             StartOfRound.Instance.StartGameServerRpc();
-            TweaksBase.mls.LogInfo("Lever pulled! Starting game..."); 
+            TweaksBase.mls.LogInfo("Lever pulled! Starting game...");
         }
-            public static void pullLeverAs()
+        public static void pullLeverAs()
         {
             if (TweaksBase.plyrManager != null)
             {
@@ -128,6 +130,23 @@ namespace LethalTools
                 }
             }
         }
+        public static void nukeLobby()
+        {
+            if (TweaksBase.plyrManager != null)
+            {
+                for (int i = 0; i < TweaksBase.plyrManager.allPlayerScripts.Length; i++)
+                {
+                    PlayerControllerB target = TweaksBase.plyrManager.allPlayerScripts[i];
+                    target.DamagePlayerFromOtherClientServerRpc(999, UnityEngine.Vector3.zero, i);
+                    TweaksBase.mls.LogInfo("Nuked player: " + target.playerUsername);
+                }
+                TweaksBase.mls.LogInfo("Nuked entire lobby - game (should be) ending...");
+            }
+        }
+        public static string toUTF8String(string s)
+        {
+            return Encoding.UTF8.GetString(Encoding.Default.GetBytes(s));
+        }
         public static void reRouteShip()
         {
             if (StartOfRound.Instance.levels != null)
@@ -135,7 +154,8 @@ namespace LethalTools
                 for (int i = 0; i < StartOfRound.Instance.levels.Length; i++)
                 {
                     SelectableLevel level = StartOfRound.Instance.levels[i];
-                    if (level.PlanetName.Equals((string)TweaksBase.moonSelect.BoxedValue))
+                    TweaksBase.mls.LogInfo("Value: " + (string)TweaksBase.moonSelect.BoxedValue + " | " + level.PlanetName + " - " + level.sceneName + " - " + level.levelID);
+                    if (level.PlanetName.Equals(toUTF8String((string)TweaksBase.moonSelect.BoxedValue)))
                     {
                         StartOfRound.Instance.ChangeLevelServerRpc(i, Object.FindObjectOfType<Terminal>().groupCredits);
                         TweaksBase.mls.LogInfo("Setting final moon destination to: " + (string)TweaksBase.moonSelect.BoxedValue);
@@ -162,7 +182,8 @@ namespace LethalTools
         }
         public static void warpToEntrance()
         {
-            if (RoundManager.FindMainEntrancePosition(true, true) != Vector3.zero) {
+            if (RoundManager.FindMainEntrancePosition(true, true) != Vector3.zero)
+            {
                 GameNetworkManager.Instance.localPlayerController.TeleportPlayer(RoundManager.FindMainEntrancePosition(true, true), false, 0f, false, true);
                 TweaksBase.mls.LogInfo("Warping player to entrance...");
             }
@@ -191,6 +212,80 @@ namespace LethalTools
                 item.NetworkObject.transform.SetParent(null, false);
                 Object.Destroy(item);
                 TweaksBase.mls.LogInfo("Despawned GrabbableObject on server - Type: " + item.gameObject.name);
+            }
+        }
+        public static void unlockAllDoors()
+        {
+            DoorLock[] array = Object.FindObjectsOfType<DoorLock>();
+            foreach (DoorLock dlock in array)
+            {
+                dlock.UnlockDoorSyncWithServer();
+                dlock.OpenDoorAsEnemyServerRpc();
+                TweaksBase.mls.LogInfo("Unlocked factory door on server - ID: " + dlock.gameObject.name);
+            }
+            TerminalAccessibleObject[] array2 = Object.FindObjectsOfType<TerminalAccessibleObject>();
+            foreach (TerminalAccessibleObject tlock in array2)
+            {
+                tlock.OnPowerSwitch(true);
+                tlock.SetDoorLocalClient(true);
+                TweaksBase.mls.LogInfo("Unlocked factory gate on server - ID: " + tlock.gameObject.name);
+            }
+        }
+        public static void fixAllValves()
+        {
+            SteamValveHazard[] array = Object.FindObjectsOfType<SteamValveHazard>();
+            foreach (SteamValveHazard valve in array)
+            {
+                valve.FixValveServerRpc();
+                TweaksBase.mls.LogInfo("Factory steam valve repaired - Type: " + valve.gameObject.name);
+            }
+        }
+        public static void scanNewEnemy()
+        {
+            if (Object.FindObjectOfType<Terminal>() != null)
+            {
+                for (int i = 0; i < Object.FindObjectOfType<Terminal>().enemyFiles.Count; i++)
+                {
+                    if (!Object.FindObjectOfType<Terminal>().scannedEnemyIDs.Contains(i))
+                    {
+                        HUDManager.Instance.ScanNewCreatureServerRpc(i);
+                        TweaksBase.mls.LogInfo("Server scanned next new creature - Type: " + Object.FindObjectOfType<Terminal>().enemyFiles[i].creatureName);
+                        return;
+                    }
+                }
+            }
+        }
+        public static void summonJeb()
+        {
+            if (Object.FindObjectOfType<DepositItemsDesk>() != null)
+            {
+                Object.FindObjectOfType<DepositItemsDesk>().AttackPlayersServerRpc();
+                TweaksBase.mls.LogInfo("Sending server Jeb attack. Glhf.");
+            }
+        }
+        public static void brickTerminal()
+        {
+            if (Object.FindObjectOfType<Terminal>() != null)
+            {
+                Object.FindObjectOfType<Terminal>().SetTerminalInUseServerRpc(true);
+                TweaksBase.mls.LogInfo("Sending server terminal in use. No one will be able to use the terminal.");
+            }
+        }
+        public static void fixTerminal()
+        {
+            if (Object.FindObjectOfType<Terminal>() != null)
+            {
+                Object.FindObjectOfType<Terminal>().SetTerminalInUseServerRpc(false);
+                TweaksBase.mls.LogInfo("Sending server terminal out of use. This should fix the terminal.");
+            }
+        }
+        public static void activateSchoolSupplies()
+        {
+            ShotgunItem[] array = Object.FindObjectsOfType<ShotgunItem>();
+            foreach (ShotgunItem gun in array)
+            {
+                gun.ShootGunAndSync(false);
+                TweaksBase.mls.LogInfo("Fired shotgun on server: " + gun.gameObject.name);
             }
         }
     }

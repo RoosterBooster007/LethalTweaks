@@ -48,11 +48,13 @@ namespace LethalTweaks
         public static ConfigEntry<bool> unStun;
         public static ConfigEntry<bool> disableMines;
         public static ConfigEntry<bool> disableTurrets;
+        public static ConfigEntry<bool> disableBees;
         public static ConfigEntry<bool> underwaterRoaming;
         public static ConfigEntry<bool> lethalLaunch;
         public static ConfigEntry<float> llVelocity;
         public static ConfigEntry<string> playerSelect;
         public static ConfigEntry<string> moonSelect;
+        public static ConfigEntry<bool> universalKeyEnabled; // missing implimentation
         public static ConfigEntry<string> chatMessage;
         public static ConfigEntry<bool> warmUp;
         public static ConfigEntry<bool> fullCharge;
@@ -146,6 +148,9 @@ namespace LethalTweaks
             disableTurrets = Config.Bind("Damage", "Disable turrets", false, "When enabled, you won't activate nearby turrets.");
             var cb_dT = new BoolCheckBoxConfigItem(disableTurrets, requiresRestart: false);
             LethalConfigManager.AddConfigItem(cb_dT);
+            disableBees = Config.Bind("Damage", "Disable locust bees", true, "When enabled, bee clusters won't aggro. you at all. Feel free to grab their hives.");
+            var cb_dB = new BoolCheckBoxConfigItem(disableBees, requiresRestart: false);
+            LethalConfigManager.AddConfigItem(cb_dB);
             underwaterRoaming = Config.Bind("Damage", "IP67 (water breathing)", false, "You can breathe under water... even longer than 30 mins (default keybind: J)!");
             var cb_uR = new BoolCheckBoxConfigItem(underwaterRoaming, requiresRestart: false);
             LethalConfigManager.AddConfigItem(cb_uR);
@@ -206,6 +211,14 @@ namespace LethalTweaks
             {
                 InputEvents.pullLeverAs();
             }));
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Kill target", "This will remotely kill your target via bludgeoning.", "Kill", () =>
+            {
+                InputEvents.killTarget();
+            }));
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Nuke entire lobby", "This will remotely kill EVERYONE (ending the level).", "Nuke", () =>
+            {
+                InputEvents.nukeLobby();
+            }));
             LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Toggle ship horn", "Exactly what it sounds like. Toggle the horn without cooldown or restraint... even remotely!", "Toggle", () =>
             {
                 if (isHornOn)
@@ -220,9 +233,13 @@ namespace LethalTweaks
                     TweaksBase.mls.LogInfo("Sending ship horn sound...");
                 }
             }));
-            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Kill target", "This will remotely kill your target via bludgeoning.", "Kill", () =>
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Force Jeb attack", "The tenticles come out in 4k. Don't stand near the desk.", "Summon", () =>
             {
-                InputEvents.killTarget();
+                InputEvents.summonJeb();
+            }));
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Firing squad", "Remotely fires all shotguns within the scene (on the server... for everyone).", "Fire!", () =>
+            {
+                InputEvents.activateSchoolSupplies();
             }));
             LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Despawn all enemies", "All current enemies will be despawned (on the server... for everyone).", "Remove", () =>
             {
@@ -239,10 +256,18 @@ namespace LethalTweaks
                 CharacterLimit = 50,
                 NumberOfLines = 1,
             });
-            LethalConfigManager.AddConfigItem(ti_mS);
-            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Route ship to moon", "This will remotely initiate a ship level change on your behalf.", "Send", () =>
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Route ship to destination", "This will remotely initiate a ship level change on your behalf.", "Send", () =>
             {
                 InputEvents.reRouteShip();
+            }));
+            LethalConfigManager.AddConfigItem(ti_mS);
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Brick ship terminal", "This will remotely deactivate the ship terminal for a while. Only works if no one is currently at the terminal.", "Hack", () =>
+            {
+                InputEvents.brickTerminal();
+            }));
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Fix ship terminal", "This will remotely fix the ship terminal. Only works if no one is currently at the terminal. This reverses terminal hacks.", "Fix", () =>
+            {
+                InputEvents.fixTerminal();
             }));
             LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Open ship doors", "This will remotely open the ship doors.", "Open", () =>
             {
@@ -251,6 +276,17 @@ namespace LethalTweaks
             LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Close ship doors", "This will remotely close the ship doors.", "Close", () =>
             {
                 InputEvents.closeShip();
+            }));
+            universalKeyEnabled = Config.Bind("Tweaks", "Unlock factory door on interact", true, "When enabled, you will unlock any door you interact with (regardless of whether you have a key).");
+            var cb_uKE = new BoolCheckBoxConfigItem(universalKeyEnabled, requiresRestart: false);
+            LethalConfigManager.AddConfigItem(cb_uKE);
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Unlock all factory doors/gates", "This will remotely unlock all factory doors and gates (on the server... for everyone). Some gates without power may remain closed for other players.", "Unlock", () =>
+            {
+                InputEvents.unlockAllDoors();
+            }));
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Fix all factory steam valves", "This will remotely fix all factory leaky steam valves (on the server... for everyone). Some gates without power may remain closed for other players.", "Unlock", () =>
+            {
+                InputEvents.fixAllValves();
             }));
             LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Teleport to ship", "This will warp you back to the ship.", "Warp", () =>
             {
@@ -271,6 +307,10 @@ namespace LethalTweaks
             LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Send anon. message", "Send a chat message to everyone anonymously.", "Send", () =>
             {
                 InputEvents.sendTextMessage();
+            }));
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Scan new enemy message", "\"Scans\" a new enemy and send a message to all players (creeps them out fr).", "Send", () =>
+            {
+                InputEvents.scanNewEnemy();
             }));
 
             mls.LogInfo("Config loaded!");
