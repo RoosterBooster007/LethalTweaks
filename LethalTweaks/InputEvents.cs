@@ -10,7 +10,7 @@ namespace LethalTools
 {
     public class InputEvents
     {
-        void Awake()
+        public void Init()
         {
             TweaksBase.IAInstance.NightVisionKey.performed += OnNightVisionInput;
             TweaksBase.IAInstance.NameTagKey.performed += OnNameTagInput;

@@ -284,7 +284,7 @@ namespace LethalTweaks
             {
                 InputEvents.unlockAllDoors();
             }));
-            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Fix all factory steam valves", "This will remotely fix all factory leaky steam valves (on the server... for everyone). Some gates without power may remain closed for other players.", "Unlock", () =>
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Fix all factory steam valves", "This will remotely fix all factory leaky steam valves (on the server... for everyone).", "Unlock", () =>
             {
                 InputEvents.fixAllValves();
             }));
@@ -304,11 +304,11 @@ namespace LethalTweaks
                 NumberOfLines = 1,
             });
             LethalConfigManager.AddConfigItem(ti_cM);
-            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Send anon. message", "Send a chat message to everyone anonymously.", "Send", () =>
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Send anon. message", "Send a chat message to everyone anonymously. Be respectful.", "Send", () =>
             {
                 InputEvents.sendTextMessage();
             }));
-            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Scan new enemy message", "\"Scans\" a new enemy and send a message to all players (creeps them out fr).", "Send", () =>
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Scan new enemy message", "\"Scans\" a new enemy and sends a message to all players (creeps them out fr).", "Send", () =>
             {
                 InputEvents.scanNewEnemy();
             }));
@@ -318,6 +318,7 @@ namespace LethalTweaks
             mls.LogInfo("Loading input classes...");
             IAInstance = new InputActions();
             IEInstance = new InputEvents();
+            IEInstance.Init();
             mls.LogInfo("Done!");
 
             mls.LogInfo("Patching game...");
