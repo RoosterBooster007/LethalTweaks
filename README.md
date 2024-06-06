@@ -37,7 +37,7 @@ This mod will always support the latest version of Lethal Company (and its beta 
 | 🧑‍💻 | SFX & Voice | **Safe words** | Monsters won't muffle your voice. |
 |||||
 | 🧑‍💻 | Identity | **Show name tags** | Always show name tags above all players. |
-| ⏳ | Identity | **Prefix** | Lets you customise your name tag by adding a cool prefix. Not fully implemented yet. |
+| ⏳ | Identity | **Prefix** | Lets you customize your name tag by adding a cool prefix. Not fully implemented yet. |
 |||||
 | 🧑‍💻 | Tweaks | **Suicide (lethal launch)** | Blast off and leave your friends behind. You can even customize the initial velocity! |
 | 🧑‍💻🧪⭐ | Tweaks | **Pull ship lever** | This will remotely initiate a game start (works regardless of host status)! Start the game without the host requirement! |
@@ -63,9 +63,8 @@ This mod will always support the latest version of Lethal Company (and its beta 
 | 🧑‍💻🧪 | Tweaks | **Send custom anon. message** | Send a chat message to everyone anonymously. Be respectful. |
 | 🧑‍💻🧪⭐ | Tweaks | **Scan new enemy message** | "Scans" a new enemy and sends a message to all players (creeps them out fr). |
 
-
 ## Default Keybinds
-The below actions can be rebound to other keys or HIDs through InputUtils (they aren't keyboard exclusive).
+The below actions can be rebound to other keys or HIDs through InputUtils (they aren't keyboard-exclusive).
 
 | Key | Action | Type |
 |:--------:|:-------------|:------|
@@ -82,3 +81,13 @@ The below actions can be rebound to other keys or HIDs through InputUtils (they 
 | O | **One-handed** | Toggle |
 | K | **Suicide** | Toggle |
 | T | **Name tags** | Toggle |
+
+## Issues & Contributions
+Please follow the available issue templates when submitting requests. Use the discussions when wanting to chat. Pull requests and user contributions are encouraged and always welcome.
+
+## Licencing (GPLv3)
+Read the **LICENSE.md** file for more information. The **Contributor Agreement** can be found there too. By downloading or contributing to this repo, you agree to the terms stated in the **LICENSE.md**.
+
+```Copyright (C) 2024 RoosterBooster007```
+
+Please include the above copyright notice when distributing or modifying any code.
