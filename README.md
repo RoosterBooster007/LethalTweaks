@@ -1,6 +1,6 @@
 # LethalTweaks
-[![Thunderstore Version](https://img.shields.io/thunderstore/v/undefined/undefined?style=for-the-badge&logo=thunderstore&logoColor=white)](https://github.com/RoosterBooster007/LethalTweaks/)
-[![Thunderstore Downloads](https://img.shields.io/thunderstore/dt/undefined/undefined?style=for-the-badge&logo=thunderstore&logoColor=white)](https://github.com/RoosterBooster007/LethalTweaks/)
+[![Thunderstore Version](https://img.shields.io/thunderstore/v/RB007/LethalTweaks?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/RB007/LethalTweaks/)
+[![Thunderstore Downloads](https://img.shields.io/thunderstore/dt/RB007/LethalTweaks?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/RB007/LethalTweaks/)
 
 Allows you to tweak many aspects of the game. Most work client side! Full bright, custom sprint/climb, inf. stamina, weightless, anti-sink/turrets, water breathing, disable cooldowns, disable falling, unltd. power, one-handed, remote start, and more!
 
