@@ -83,7 +83,7 @@ The below actions can be rebound to other keys or HIDs through InputUtils (they 
 | T | **Name tags** | Toggle |
 
 ## Issues & Contributions
-Please follow the available issue templates when submitting requests. Use the discussions when wanting to chat. Pull requests and user contributions are encouraged and always welcome.
+Please follow the available issue templates when submitting requests. Use the discussions tab when wanting to chat. Pull requests and other user contributions are encouraged and always welcome.
 
 ## Licencing (GPLv3)
 Read the **LICENSE.md** file for more information. The **Contributor Agreement** can be found there too. By downloading or contributing to this repo, you agree to the terms stated in the **LICENSE.md**.
