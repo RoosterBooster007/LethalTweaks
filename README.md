@@ -1,4 +1,5 @@
 # LethalTweaks
+![](https://img.shields.io/github/downloads/RoosterBooster007/LethalTweaks/total)
 Allows you to tweak many aspects of the game. Most work client side! Full bright, custom sprint/climb, inf. stamina, weightless, anti-sink/turrets, water breathing, disable cooldowns, disable falling, unltd. power, one-handed, remote start, and more!
 
 ## Dependencies
@@ -9,7 +10,8 @@ Allows you to tweak many aspects of the game. Most work client side! Full bright
 | ✅ | [BepInExPack](https://thunderstore.io/c/lethal-company/p/BepInEx/BepInExPack/versions/#:~:text=5.4.2100) | 5.4.2100 |
 
 ## Features & Tweaks
-This mod will always support the latest version of Lethal Company (and its beta branch). Compatibility with older versions isn't guaranteed. If something isn't right, open an issue.
+> [!NOTE]
+> This mod will always support the latest version of Lethal Company (and its beta branch). Compatibility with older versions isn't guaranteed. If something isn't right, open an issue.
 
 (🧑‍💻 = Client, 🖥️ = Server, ⏳ = Temporarily broken, 🧪 = Experimental, ⭐ = Spotlight)
 | Perms | Section | Tweak | Notes |
@@ -64,7 +66,8 @@ This mod will always support the latest version of Lethal Company (and its beta 
 | 🧑‍💻🧪⭐ | Tweaks | **Scan new enemy message** | "Scans" a new enemy and sends a message to all players (creeps them out fr). |
 
 ## Default Keybinds
-The below actions can be rebound to other keys or HIDs through InputUtils (they aren't keyboard-exclusive).
+> [!TIP]
+> The below actions can be rebound to other keys or HIDs through InputUtils (they aren't keyboard-exclusive).
 
 | Key | Action | Type |
 |:--------:|:-------------|:------|
@@ -90,4 +93,5 @@ Read the **LICENSE.md** file for more information. The **Contributor Agreement**
 
 ```Copyright (C) 2024 RoosterBooster007```
 
-Please include the above copyright notice when distributing or modifying any code.
+> [!IMPORTANT]
+> Please include the above copyright notice when distributing or modifying any code.
