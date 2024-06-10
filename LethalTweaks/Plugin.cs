@@ -366,10 +366,10 @@ namespace LethalTweaks
 
         private static bool isFirstRun()
         {
-            if (!PlayerPrefs.HasKey("LTs.newUsert"))
+            if (!PlayerPrefs.HasKey("LTs.newUser"))
             {
-                //PlayerPrefs.SetInt("LTs.newUser", 1);
-                //PlayerPrefs.Save();
+                PlayerPrefs.SetInt("LTs.newUser", 1);
+                PlayerPrefs.Save();
                 return true;
             }
             return false;
@@ -377,10 +377,10 @@ namespace LethalTweaks
 
         internal static bool recentlyUpdated()
         {
-            if (PlayerPrefs.GetString("LTs.v") != "0.0.0")
+            if (PlayerPrefs.GetString("LTs.v") != ModVersion)
             {
-                //PlayerPrefs.SetString("LTs.v", ModVersion);
-                //PlayerPrefs.Save();
+                PlayerPrefs.SetString("LTs.v", ModVersion);
+                PlayerPrefs.Save();
                 return true;
             }
             return false;
