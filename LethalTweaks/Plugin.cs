@@ -6,6 +6,14 @@ using LethalConfig;
 using LethalConfig.ConfigItems;
 using LethalConfig.ConfigItems.Options;
 using LethalTools;
+using LethalTools.Patches;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Net;
+using System.Net.Http;
+using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace LethalTweaks
 {
@@ -14,9 +22,15 @@ namespace LethalTweaks
     [BepInDependency("com.rune580.LethalCompanyInputUtils")]
     public class TweaksBase : BaseUnityPlugin
     {
-        private const string modGUID = "net.RB007.LethalTweaks";
-        private const string modName = "LethalTweaks";
-        private const string ModVersion = "1.0.0";
+        public const string modGUID = "net.RB007.LethalTweaks";
+        public const string modName = "LethalTweaks";
+        public const string ModVersion = "1.1.0";
+
+        private static DateTimeOffset sessionStartTime = DateTimeOffset.UtcNow;
+        private static DateTimeOffset lastEng = DateTimeOffset.UtcNow;
+        private static int GAHitCount = 1;
+        private static int GASessionCount = 1;
+        private static string GASessionID = Regex.Replace(System.Guid.NewGuid().ToString(), "[^\\d]", "").Substring(0, 10);
 
         private readonly Harmony harmony = new Harmony(modGUID);
         public static TweaksBase Instance;
@@ -31,6 +45,7 @@ namespace LethalTweaks
         public static bool isChatting = false;
         public static bool isInTerminal = false;
         public static bool isMenuOpen = false;
+        public static bool isPlayerControlled = false;
 
         public static ConfigEntry<bool> enableKeybinds;
         public static ConfigEntry<bool> enableTele;
@@ -61,8 +76,6 @@ namespace LethalTweaks
         public static ConfigEntry<bool> oneHanded;
         public static ConfigEntry<bool> unMuffle;
         public static ConfigEntry<bool> nameTags;
-        public static ConfigEntry<bool> userPrefixEnabled;
-        public static ConfigEntry<string> userPrefix;
 
         public static bool isHornOn = false;
         public static bool sendHornDown = false;
@@ -70,6 +83,8 @@ namespace LethalTweaks
 
         public static bool shouldRevertSpeed = false;
         public static bool shouldRevertClimbSpeed = false;
+
+        public static HttpClient HTTPclient = new HttpClient();
 
         void Awake()
         {
@@ -85,7 +100,7 @@ namespace LethalTweaks
             enableKeybinds = Config.Bind("General", "Enable keybinds", true, "When enabled, individual tweaks can be toggled via user input.");
             var cb_eK = new BoolCheckBoxConfigItem(enableKeybinds, requiresRestart: false);
             LethalConfigManager.AddConfigItem(cb_eK);
-            enableTele = Config.Bind("General", "Enable telemetry", true, "When enabled, some anonymous user data/input actions may be uploaded. This helps me understand what features are used the most and what I can improve. :)");
+            enableTele = Config.Bind("General", "Enable telemetry", true, "When enabled, some anonymous user data/input actions may be uploaded. This helps me understand what features are used the most and what I can improve. :) \n\nWhat's collected?\n- OS, LC, and LethalTweaks version data\n- LTs actions/events (some game data)\n- Your language and region (ex. en-US, Chicago)\n\nCheck the README for more info.");
             var cb_eT = new BoolCheckBoxConfigItem(enableTele, requiresRestart: false);
             LethalConfigManager.AddConfigItem(cb_eT);
 
@@ -172,17 +187,6 @@ namespace LethalTweaks
             nameTags = Config.Bind("Identity", "Always show name tags", false, "When enabled, players' tags will always be shown above their heads (default keybind: T).");
             var cb_nT = new BoolCheckBoxConfigItem(nameTags, requiresRestart: false);
             LethalConfigManager.AddConfigItem(cb_nT);
-            userPrefixEnabled = Config.Bind("Identity", "Enable prefix", false, "When enabled, the prefix (below) will be added before your username.");
-            var cb_uPE = new BoolCheckBoxConfigItem(userPrefixEnabled, requiresRestart: false);
-            LethalConfigManager.AddConfigItem(cb_uPE);
-            userPrefix = Config.Bind("Identity", "Prefix text", "[LTs]", "Type what you want to appear before your username (requires re-log). Some characters may cause unintended bugs. Be respectful.");
-            var ti_uP = new TextInputFieldConfigItem(userPrefix, new TextInputFieldOptions
-            {
-                RequiresRestart = false,
-                CharacterLimit = 15,
-                NumberOfLines = 1,
-            });
-            LethalConfigManager.AddConfigItem(ti_uP);
 
             lethalLaunch = Config.Bind("Tweaks", "Lethal launch", true, "When enabled, you can launch and kill yourself by pressing the suicide keybind (default: K) at any time.");
             var cb_lL = new BoolCheckBoxConfigItem(lethalLaunch, requiresRestart: false);
@@ -195,7 +199,7 @@ namespace LethalTweaks
                 Max = 100f
             });
             LethalConfigManager.AddConfigItem(sldr_lV);
-            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Pull start lever", "This will remotely initiate a game start (works regardless of host status).", "Pull", () =>
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Pull start lever", "This will remotely initiate a game start (works regardless of host status) (default keybind: Z).", "Pull", () =>
             {
                 InputEvents.startGame();
             }));
@@ -226,7 +230,8 @@ namespace LethalTweaks
                     isHornOn = false;
                     sendHornUp = true;
                     TweaksBase.mls.LogInfo("Sending ship horn end...");
-                } else
+                }
+                else
                 {
                     isHornOn = true;
                     sendHornDown = true;
@@ -249,18 +254,18 @@ namespace LethalTweaks
             {
                 InputEvents.killItems();
             }));
-            moonSelect = Config.Bind("Tweaks", "Destination", "Rend", "Enter the name of a moon (must be exact).");
+            moonSelect = Config.Bind("Tweaks", "Set destination", "Rend", "Enter the name of a moon (must be exact).");
             var ti_mS = new TextInputFieldConfigItem(moonSelect, new TextInputFieldOptions
             {
                 RequiresRestart = false,
                 CharacterLimit = 50,
                 NumberOfLines = 1,
             });
+            LethalConfigManager.AddConfigItem(ti_mS);
             LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Route ship to destination", "This will remotely initiate a ship level change on your behalf.", "Send", () =>
             {
                 InputEvents.reRouteShip();
             }));
-            LethalConfigManager.AddConfigItem(ti_mS);
             LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Brick ship terminal", "This will remotely deactivate the ship terminal for a while. Only works if no one is currently at the terminal.", "Hack", () =>
             {
                 InputEvents.brickTerminal();
@@ -277,7 +282,7 @@ namespace LethalTweaks
             {
                 InputEvents.closeShip();
             }));
-            universalKeyEnabled = Config.Bind("Tweaks", "Unlock factory door on interact", true, "When enabled, you will unlock any door you interact with (regardless of whether you have a key).");
+            universalKeyEnabled = Config.Bind("Tweaks", "Unlock factory door on interact", true, "When enabled, you will unlock any door you interact with (regardless of whether you have a key). Not fully implemented yet.");
             var cb_uKE = new BoolCheckBoxConfigItem(universalKeyEnabled, requiresRestart: false);
             LethalConfigManager.AddConfigItem(cb_uKE);
             LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Unlock all factory doors/gates", "This will remotely unlock all factory doors and gates (on the server... for everyone). Some gates without power may remain closed for other players.", "Unlock", () =>
@@ -288,11 +293,11 @@ namespace LethalTweaks
             {
                 InputEvents.fixAllValves();
             }));
-            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Teleport to ship", "This will warp you back to the ship.", "Warp", () =>
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Teleport to ship", "This will warp you back to the ship (default keybind: B).", "Warp", () =>
             {
                 InputEvents.warpToShip();
             }));
-            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Teleport to entrance", "This will warp you to the main entrance.", "Warp", () =>
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Teleport to entrance", "This will warp you to the main entrance (default keybind: V).", "Warp", () =>
             {
                 InputEvents.warpToEntrance();
             }));
@@ -322,8 +327,123 @@ namespace LethalTweaks
             mls.LogInfo("Done!");
 
             mls.LogInfo("Patching game...");
-            harmony.PatchAll();
-            mls.LogInfo("Patched!");
+            mls.LogInfo("Searching for patches...");
+            Type[] classtypes = {typeof(ControllerPatch), typeof(SoRPatches), typeof(LobbyPatch), typeof(LeavePatch), typeof(GrenadesPatch), typeof(TurretsPatch), typeof(MinesPatch), typeof(BeesPatch), typeof(ItemPatch), typeof(HornPatch), typeof(BridgePatch), typeof(AppaPatch), typeof(QMenuPatch), typeof(MenuPatch), typeof(LockPatch)}; // list all class types with harmony patches here
+            foreach (Type t in classtypes)
+            {
+                try
+                {
+                    harmony.CreateClassProcessor(t).Patch(); // using Reflection because not all patches work all the time
+                    mls.LogInfo("Patched " + t.Name + " successfully!");
+                }
+                catch (Exception ex)
+                {
+                    mls.LogInfo("Harmony patch failed for " + t.Name + "! This may cause issues... Exception: " + ex.Message);
+                }
+            }
+            mls.LogInfo("Patched all!");
+
+            if (isFirstRun())
+            {
+                SendUserGA("page_view", "MainMenu", "&_fv=1");
+                mls.LogInfo("Finishing initial setup...");
+            } else
+            {
+                SendUserGA("page_view", "MainMenu", "");
+                mls.LogInfo("Welcome back!");
+            }
+        }
+
+        private static void startNewGASession()
+        {
+            GASessionCount++;
+            GASessionID = Regex.Replace(System.Guid.NewGuid().ToString(), "[^\\d]", "").Substring(0, 10);
+            sessionStartTime = DateTimeOffset.UtcNow;
+            lastEng = DateTime.UtcNow;
+            GAHitCount = 1;
+            TweaksBase.SendUserGA("page_view", "InGame", "");
+        }
+
+        private static bool isFirstRun()
+        {
+            if (!PlayerPrefs.HasKey("LTs.newUsert"))
+            {
+                //PlayerPrefs.SetInt("LTs.newUser", 1);
+                //PlayerPrefs.Save();
+                return true;
+            }
+            return false;
+        }
+
+        internal static bool recentlyUpdated()
+        {
+            if (PlayerPrefs.GetString("LTs.v") != "0.0.0")
+            {
+                //PlayerPrefs.SetString("LTs.v", ModVersion);
+                //PlayerPrefs.Save();
+                return true;
+            }
+            return false;
+        }
+
+        private static string getSystemArch()
+        {
+            if (Environment.Is64BitProcess)
+            {
+                return "x86_64";
+            } else
+            {
+                return "x86";
+            }
+        }
+
+        private static string getSystemBits()
+        {
+            if (Environment.Is64BitProcess)
+            {
+                return "64";
+            }
+            else
+            {
+                return "32";
+            }
+        }
+
+        internal static void SendGAEvent(string category, string type, Dictionary<string, string> args)
+        {
+            if ((bool)enableTele.BoxedValue)
+            {
+                if ((DateTime.UtcNow - lastEng).TotalMinutes >= 30)
+                {
+                    startNewGASession();
+                }
+
+                type = WebUtility.UrlEncode(type);
+                category = WebUtility.UrlEncode(category);
+
+                string e_params = "";
+                foreach (KeyValuePair<string, string> kvp in args)
+                {
+                    if (int.TryParse(kvp.Value, out int value))
+                    {
+                        e_params += "&epn." + WebUtility.UrlEncode(kvp.Key) + "=" + value;
+                    } else
+                    {
+                        e_params += "&ep." + WebUtility.UrlEncode(kvp.Key) + "=" + WebUtility.UrlEncode(kvp.Value);
+                    }
+                }
+
+                GAHitCount++;
+                _ = HTTPclient.GetAsync("https://www.google-analytics.com/g/collect?v=2&tid=G-73HYZC435K&cid=" + SystemInfo.deviceUniqueIdentifier + "&sid=" + GASessionID + "&ul=" + CultureInfo.CurrentCulture.Name + "&sr=" + Screen.currentResolution.width + "x" + Screen.currentResolution.height + "&uap=" + WebUtility.UrlEncode(Environment.OSVersion.ToString()) + "&uam=" + WebUtility.UrlEncode(Application.version) + "&uapv=" + WebUtility.UrlEncode(TweaksBase.ModVersion) + "&en=" + type + "&ep.category=" + category + e_params + "&_et=" + (long)Math.Floor((DateTime.UtcNow - lastEng).TotalMilliseconds) + "&tfd=" + (long)Math.Floor((DateTime.UtcNow - sessionStartTime).TotalMilliseconds) + "&uamb=0&uaw=0&pscdl=noapi&_s=" + GAHitCount + "&sct=" + GASessionCount + "&seg=1&_ee=1&npa=0&dma=0&frm=0&are=1");
+                lastEng = DateTime.UtcNow;
+            }
+        }
+        internal static void SendUserGA(string e, string screenTitle, string args)
+        {
+            if ((bool)enableTele.BoxedValue)
+            {
+                _ = HTTPclient.GetAsync("https://www.google-analytics.com/g/collect?v=2&tid=G-73HYZC435K&cid=" + SystemInfo.deviceUniqueIdentifier + "&sid=" + GASessionID + "&ul=" + CultureInfo.CurrentCulture.Name + "&sr=" + Screen.currentResolution.width + "x" + Screen.currentResolution.height + "&uap=" + WebUtility.UrlEncode(Environment.OSVersion.ToString()) + "&uam=" + WebUtility.UrlEncode(Application.version) + "&uapv=" + WebUtility.UrlEncode(TweaksBase.ModVersion) + "&en=" + e + "&ep.cpu=" + SystemInfo.processorType + "&ep.gpu=" + SystemInfo.graphicsDeviceName + "&tfd=" + (long)Math.Floor((DateTime.UtcNow - sessionStartTime).TotalMilliseconds) + "&uaa=" + getSystemArch() + "&uab=" + getSystemBits() + "&uamb=0&uaw=0&dt=" + WebUtility.UrlEncode(screenTitle + " (v" + TweaksBase.ModVersion + ")") + "&are=1&frm=0&pscdl=noapi&seg=1&npa=0&_s=1&sct=" + GASessionCount + "&dma=0&_ss=1&_nsi=1&_ee=1" + args);
+            }
         }
     }
 }

@@ -44,5 +44,14 @@ namespace LethalTools
 
         [InputAction(KeyboardControl.T, Name = "Name Tags Toggle")]
         public InputAction NameTagKey { get; set; }
+
+        [InputAction(KeyboardControl.B, Name = "Warp Ship")]
+        public InputAction ShipKey { get; set; }
+
+        [InputAction(KeyboardControl.V, Name = "Warp Entrance")]
+        public InputAction EntranceKey { get; set; }
+
+        [InputAction(KeyboardControl.Z, Name = "Start Game")]
+        public InputAction StartKey { get; set; }
     }
 }

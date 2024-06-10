@@ -1,17 +1,22 @@
 ﻿using GameNetcodeStuff;
 using HarmonyLib;
 using LethalTweaks;
+using Steamworks;
+using Steamworks.Data;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
 namespace LethalTools.Patches
 {
     [HarmonyPatch(typeof(PlayerControllerB))]
-    internal class ControllerPatch
+    public class ControllerPatch
     {
         [HarmonyPatch("Start")]
         [HarmonyPostfix]
-        private static void patchLighting(ref Light ___nightVision)
+        public static void patchLighting(ref Light ___nightVision)
         {
             ___nightVision.type = LightType.Point;
             ___nightVision.intensity = 45000f;
@@ -24,19 +29,21 @@ namespace LethalTools.Patches
 
         [HarmonyPatch("Update")]
         [HarmonyPostfix]
-        private static void patchController(PlayerControllerB __instance, ref float ___sprintMultiplier)
+        public static void patchController(PlayerControllerB __instance, ref float ___sprintMultiplier)
         {
             TweaksBase.plyrManager = __instance.playersManager;
 
             TweaksBase.isChatting = __instance.isTypingChat;
             TweaksBase.isInTerminal = __instance.inTerminalMenu;
             TweaksBase.isMenuOpen = __instance.quickMenuManager.isMenuOpen;
+            TweaksBase.isPlayerControlled = __instance.isPlayerControlled;
 
             if (!__instance.isTypingChat && !__instance.inTerminalMenu && __instance.quickMenuManager.isMenuOpen && (bool)TweaksBase.enableKeybinds.BoxedValue) // do not allow keybinds when chatting or in terminal
             {
                 if (TweaksBase.IAInstance.SuicideKey.WasPressedThisFrame() && NetworkManager.Singleton.LocalClientId == __instance.playerClientId && !__instance.isPlayerDead)
                 {
-                    __instance.KillPlayer(Vector3.up * 50f, true, CauseOfDeath.Gravity, 0); // launches killed player when keybind pressed
+                    __instance.KillPlayer(Vector3.up * (float)TweaksBase.llVelocity.BoxedValue, true, CauseOfDeath.Gravity, 0); // launches killed player when keybind pressed
+                    TweaksBase.SendGAEvent("event", "suicide", new Dictionary<string, string>() { ["initial_velocity"] = ((float)TweaksBase.llVelocity.BoxedValue).ToString(), ["elapsed"] = StartOfRound.Instance.timeSinceRoundStarted.ToString() });
                 }
             }
 
@@ -52,7 +59,8 @@ namespace LethalTools.Patches
                 __instance.nightVision.spotAngle = 9999f;
                 __instance.nightVision.gameObject.SetActive(true); // enable and set vision level
 
-            } else if (!__instance.isPlayerDead && __instance.isInsideFactory)
+            }
+            else if (!__instance.isPlayerDead && __instance.isInsideFactory)
             {
                 __instance.nightVision.gameObject.SetActive(false);
                 __instance.nightVision.enabled = false;
@@ -69,7 +77,8 @@ namespace LethalTools.Patches
             {
                 TweaksBase.shouldRevertSpeed = true;
                 ___sprintMultiplier = (float)TweaksBase.speedMultiplier.BoxedValue; // custom user speed
-            } else if (TweaksBase.shouldRevertSpeed)
+            }
+            else if (TweaksBase.shouldRevertSpeed)
             {
                 TweaksBase.shouldRevertSpeed = false;
                 ___sprintMultiplier = 1f;
@@ -117,23 +126,112 @@ namespace LethalTools.Patches
             }
         }
 
-        [HarmonyPatch("ConnectClientToPlayerObject")]
-        [HarmonyPrefix]
-        private static void patchUser(ref ulong ___playerClientId)
+        [HarmonyPatch("BreakLegsSFXServerRpc")]
+        [HarmonyPostfix]
+        public static void patchStartEmote()
         {
-            if ((bool)TweaksBase.userPrefixEnabled.BoxedValue && NetworkManager.Singleton.LocalClientId == ___playerClientId)
-            {
-                GameNetworkManager.Instance.username = TweaksBase.userPrefix.BoxedValue + " " + GameNetworkManager.Instance.username; // adds prefix
-            }
+            TweaksBase.SendGAEvent("event", "fall", new Dictionary<string, string>() { ["elapsed"] = StartOfRound.Instance.timeSinceRoundStarted.ToString() });
         }
 
-        [HarmonyPatch("NoPunctuation")]
+        [HarmonyPatch("StartPerformingEmoteServerRpc")]
         [HarmonyPostfix]
-        private static void patchUsername(ref ulong ___playerClientId, ref string __result)
+        public static void patchStartEmote(ref Animator ___playerBodyAnimator)
         {
-            if ((bool) TweaksBase.userPrefixEnabled.BoxedValue && NetworkManager.Singleton.LocalClientId == ___playerClientId)
+            TweaksBase.SendGAEvent("event", "emote", new Dictionary<string, string>() { ["emote_id"] = ___playerBodyAnimator.GetInteger("emoteNumber").ToString(), ["elapsed"] = StartOfRound.Instance.timeSinceRoundStarted.ToString() });
+        }
+    }
+
+    [HarmonyPatch(typeof(LobbySlot))]
+    public class LobbyPatch
+    {
+        [HarmonyPatch("JoinLobbyAfterVerifying")]
+        [HarmonyPostfix]
+        public static void patchJoining(Lobby lobby, SteamId lobbyId)
+        {
+            TweaksBase.SendGAEvent("client", "join", new Dictionary<string, string>() { ["lobby_id"] = lobbyId.ToString(), ["lobby_name"] = lobby.GetData("name") });
+        }
+    }
+
+    [HarmonyPatch(typeof(GameNetworkManager))]
+    public class LeavePatch
+    {
+        [HarmonyPatch("StartHost")]
+        [HarmonyPostfix]
+        public static void patchHosting(ref HostSettings ___lobbyHostSettings)
+        {
+            TweaksBase.SendGAEvent("client", "host", new Dictionary<string, string>() { ["lobby_name"] = ___lobbyHostSettings.lobbyName });
+        }
+
+        [HarmonyPatch("DisconnectProcess")]
+        [HarmonyPostfix]
+        public static void patchLeaving(ref int ___disconnectReason, ref bool ___isHostingGame)
+        {
+            TweaksBase.SendGAEvent("client", "leave", new Dictionary<string, string>() { ["reason_id"] = ___disconnectReason.ToString(), ["hosting"] = ___isHostingGame.ToString(), ["elapsed"] = StartOfRound.Instance.timeSinceRoundStarted.ToString() });
+        }
+
+        [HarmonyPatch("OnDisable")]
+        [HarmonyPrefix]
+        public static void patchQuit()
+        {
+            TweaksBase.SendGAEvent("state", "session_end", new Dictionary<string, string>() { ["closed"] = "true" });
+        }
+    }
+
+    [HarmonyPatch(typeof(StartOfRound))]
+    public class SoRPatches
+    {
+        [HarmonyPatch("FirePlayersAfterDeadlineClientRpc")]
+        [HarmonyPrefix]
+        public static void patchJoining(ref EndOfGameStats ___gameStats, ref bool ___firingPlayersCutsceneRunning)
+        {
+            if (___firingPlayersCutsceneRunning) return;
+            ___firingPlayersCutsceneRunning = true;
+            TweaksBase.SendGAEvent("event", "fired", new Dictionary<string, string>() { ["days_spent"] = ___gameStats.daysSpent.ToString(), ["scrap_value"] = ___gameStats.scrapValueCollected.ToString(), ["steps_taken"] = ___gameStats.allStepsTaken.ToString() });
+        }
+
+        [HarmonyPatch("openingDoorsSequence")]
+        [HarmonyPostfix]
+        public static void patchLandShip()
+        {
+            TweaksBase.SendGAEvent("event", "land", new Dictionary<string, string>() { ["moon"] = Regex.Replace(StartOfRound.Instance.currentLevel.PlanetName, @"\d", string.Empty).Trim(), ["weather"] = StartOfRound.Instance.currentLevel.currentWeather.ToString() });
+        }
+    }
+
+    [HarmonyPatch(typeof(QuickMenuManager))]
+    public class QMenuPatch
+    {
+        [HarmonyPatch("OpenQuickMenu")]
+        [HarmonyPostfix]
+        public static void patchOpen()
+        {
+            TweaksBase.SendGAEvent("event", "menu", new Dictionary<string, string>() { ["open"] = "true" });
+        }
+
+        [HarmonyPatch("CloseQuickMenu")]
+        [HarmonyPostfix]
+        public static void patchClose()
+        {
+            TweaksBase.SendGAEvent("event", "menu", new Dictionary<string, string>() { ["open"] = "false" });
+        }
+    }
+
+    [HarmonyPatch(typeof(MenuManager))]
+    public class MenuPatch
+    {
+        [HarmonyPatch("Awake")]
+        [HarmonyPostfix]
+        public static void patchVersionText(MenuManager __instance, ref TextMeshProUGUI ___versionNumberText)
+        {
+            if (__instance != null && ___versionNumberText != null)
             {
-                __result = TweaksBase.userPrefix.BoxedValue + " " + __result; // also adds prefix
+                ___versionNumberText.enableWordWrapping = false;
+                ___versionNumberText.text = "v" + GameNetworkManager.Instance.gameVersionNum + " - LTs v" + TweaksBase.ModVersion;
+
+                if (TweaksBase.recentlyUpdated())
+                {
+                    __instance.DisplayMenuNotification("LethalTweaks has been updated to v" + TweaksBase.ModVersion + "!\n\nSee CHANGELOG.md for more info.", "Cool");
+                    TweaksBase.SendGAEvent("state", "update", new Dictionary<string, string>() { ["version"] = TweaksBase.ModVersion });
+                }
             }
         }
     }

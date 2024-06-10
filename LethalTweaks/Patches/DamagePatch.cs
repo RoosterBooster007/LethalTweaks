@@ -5,11 +5,11 @@ using UnityEngine;
 namespace LethalTools.Patches
 {
     [HarmonyPatch(typeof(StunGrenadeItem))]
-    internal class GrenadesPatch
+    public class GrenadesPatch
     {
         [HarmonyPatch("Update")]
         [HarmonyPostfix]
-        private static void patchGrenades(ref bool ___hasExploded)
+        public static void patchGrenades(ref bool ___hasExploded)
         {
             if ((bool) TweaksBase.unStun.BoxedValue)
             {
@@ -19,11 +19,11 @@ namespace LethalTools.Patches
     }
 
     [HarmonyPatch(typeof(Turret))]
-    internal class TurretsPatch
+    public class TurretsPatch
     {
         [HarmonyPatch("Update")]
         [HarmonyPostfix]
-        private static void patchTurrets(ref bool ___turretActive, ref Animator ___turretAnimator)
+        public static void patchTurrets(ref bool ___turretActive, ref Animator ___turretAnimator)
         {
             if ((bool)TweaksBase.disableTurrets.BoxedValue)
             {
@@ -37,30 +37,32 @@ namespace LethalTools.Patches
     }
 
     [HarmonyPatch(typeof(Landmine))]
-    internal class MinesPatch
+    public class MinesPatch
     {
         [HarmonyPatch("TriggerMineOnLocalClientByExiting")]
         [HarmonyPrefix]
-        private static void patchMines(ref bool __result)
+        public static bool patchMines()
         {
             if ((bool)TweaksBase.disableMines.BoxedValue)
             {
-                __result = false; // deactivates all mines
+                return false; // deactivates all mines
             }
+            return true;
         }
     }
 
     [HarmonyPatch(typeof(RedLocustBees))]
-    internal class BeesPatch
+    public class BeesPatch
     {
         [HarmonyPatch("OnCollideWithPlayer")]
         [HarmonyPrefix]
-        private static void patchBees(ref bool __result)
+        public static bool patchBees()
         {
             if ((bool)TweaksBase.disableBees.BoxedValue)
             {
-                __result = false; // disables all bee cluster collisions
+                return false; // disables all bee cluster collisions
             }
+            return true;
         }
     }
 }
