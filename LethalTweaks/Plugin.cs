@@ -293,11 +293,11 @@ namespace LethalTweaks
             {
                 InputEvents.fixAllValves();
             }));
-            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Teleport to ship", "This will warp you back to the ship (default keybind: B).", "Warp", () =>
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Teleport to ship", "This will warp you back to the ship (default keybind: N).", "Warp", () =>
             {
                 InputEvents.warpToShip();
             }));
-            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Teleport to entrance", "This will warp you to the main entrance (default keybind: V).", "Warp", () =>
+            LethalConfigManager.AddConfigItem(new GenericButtonConfigItem("Tweaks", "Teleport to entrance", "This will warp you to the main entrance (default keybind: M).", "Warp", () =>
             {
                 InputEvents.warpToEntrance();
             }));
