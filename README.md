@@ -85,6 +85,21 @@ Allows you to tweak many aspects of the game. Most work client side! Full bright
 | O | **One-handed** | Toggle |
 | K | **Suicide** | Toggle |
 | T | **Name tags** | Toggle |
+| Z | **Start game** | Action |
+| N | **Warp ship** | Action |
+| M | **Warp entrance** | Action |
+
+## Telemetrics
+Unless turned off in the config, LethalTweaks may upload small amounts of Lethal Company and LTs user data. This helps me understand what features are used the most and what I can improve.
+
+**What's collected?**
+- OS, LC, and LethalTweaks version data
+- Your CPU (type), GPU (type), and screen resolution
+- LTs actions/events (some game data)
+- Your language and region (ex. en-US, Chicago)
+
+> [!IMPORTANT]
+> Your Steam username is NOT sent (to keep things anon.) unless it's included in a lobby name (ex. RB007's Crew).
 
 ## Issues & Contributions
 Please follow the available issue templates when submitting requests. Use the discussions tab when wanting to chat. Pull requests (to the ```dev``` branch) and other user contributions are encouraged and always welcome.
