@@ -1,3 +1,5 @@
+<img src="https://github.com/RoosterBooster007/LethalTweaks/blob/master/icon.png?raw=true" width="160px" height="160px"></img>
+
 # LethalTweaks
 [![Thunderstore Version](https://img.shields.io/thunderstore/v/RB007/LethalTweaks?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/RB007/LethalTweaks/)
 [![Thunderstore Downloads](https://img.shields.io/thunderstore/dt/RB007/LethalTweaks?style=for-the-badge&logo=thunderstore&logoColor=white)](https://thunderstore.io/c/lethal-company/p/RB007/LethalTweaks/)
